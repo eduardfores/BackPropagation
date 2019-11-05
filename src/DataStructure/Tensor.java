@@ -52,9 +52,6 @@ public class Tensor {
 		}
 	}
 
-	public void train(String str, double xMax, double xMin, int epochs) {
-		this.feedForward(str, xMax, xMin, epochs);
-	}
 	
 	public double execute(String str, double xMax, double xMin) {
 		double output=0.0;
@@ -95,7 +92,7 @@ public class Tensor {
 		//return output;
 	}
 	
-	private void feedForward(String str, double xMax, double xMin, int epochs) {
+	public void train(String str, double xMax, double xMin, int epochs) {
 		String[] data=str.split("\n");
 		for (int e=0; e<epochs; e++) {
 			for(int i=0; i<data.length; i++) {
@@ -138,6 +135,34 @@ public class Tensor {
 					this.backPropagation(estimatedResultScaled);
 			}
 		}
+	}
+	
+	private double feedForward(String str, double xMax, double xMin, int epochs) {			
+		Double actualRelation=0.0;
+		Double neuronResult=0.0;
+		Double threeHold=0.0;
+		Double outPutNeuron=0.0;
+		double finalOutput= 0.0;
+		
+		for (int j=0; j<this.tensor.size();j++) { //this j is the actual layer
+			for(int k=0; k<this.tensor.get(j).getRelation().length; k++) { //this k is the number of neurons of the actual layer
+				for(int l=0; l<this.tensor.get(j).getRelation()[k].length; l++) { //this l is the number of neurons of the last layer
+					actualRelation=this.tensor.get(j).getRelation()[k][l];
+					neuronResult=this.results.getArrayList().get(j)[l];
+					threeHold=this.threeHold.getArrayList().get(j+1)[k]; //we want the threeHold from the actual neuron
+					
+					outPutNeuron=outPutNeuron+(actualRelation*neuronResult);
+				}
+				outPutNeuron-=threeHold;
+				outPutNeuron=sigmoid(outPutNeuron);
+				
+				if((j+1)<this.results.getArrayList().size())
+					this.results.getArrayList().get(j+1)[k]=outPutNeuron;
+				finalOutput=outPutNeuron;
+				outPutNeuron=0.0;
+			}
+		}
+		return finalOutput;
 		//System.out.println(this.results);
 	}
 	
