@@ -8,8 +8,9 @@ import com.sun.org.apache.xalan.internal.xsltc.compiler.sym;
 
 public class Tensor {
 
-	private static final double learningRate= 0.7;
-	private static final double momentum=0.5;
+	private static final double learningRate= 0.1;
+	private static final double momentum=0.1;
+	private static final double MAX=50;
 	
 	private HashMap<Integer, Relation> tensor;
 	private ListOfList results;
@@ -46,7 +47,7 @@ public class Tensor {
 		this.changesThreeHold.initializeListOfLists(listNodes, 0);
 		
 		for(int i=1; i<lenList; i++) {
-			this.tensor.put(new Integer(i-1), new Relation(listNodes[i], listNodes[i-1],false));
+			this.tensor.put(new Integer(i-1), new Relation(listNodes[i], listNodes[i-1],true));
 			this.changesWeigth.put(new Integer(i-1), new Relation(listNodes[i], listNodes[i-1],false));
 		}
 	}
@@ -90,13 +91,13 @@ public class Tensor {
 				outPutNeuron=0.0;
 			}
 		}
-		return this.unscaleParams(1, 0, 10000, 0, output);
+		return this.unscaleParams(1, 0, MAX, 0, output);
 		//return output;
 	}
 	
 	private void feedForward(String str, double xMax, double xMin, int epochs) {
 		String[] data=str.split("\n");
-		for (int e=0; e<epochs; e++)
+		for (int e=0; e<epochs; e++) {
 			for(int i=0; i<data.length; i++) {
 				Random rand = new Random();
 				String[] params=data[rand.nextInt(data.length)].split(" "); //take one list with params + result
@@ -112,6 +113,7 @@ public class Tensor {
 				Double neuronResult=0.0;
 				Double threeHold=0.0;
 				Double outPutNeuron=0.0;
+				double finalOutput= 0.0;
 				
 				for (int j=0; j<this.tensor.size();j++) { //this j is the actual layer
 					for(int k=0; k<this.tensor.get(j).getRelation().length; k++) { //this k is the number of neurons of the actual layer
@@ -127,14 +129,15 @@ public class Tensor {
 						
 						if((j+1)<this.results.getArrayList().size())
 							this.results.getArrayList().get(j+1)[k]=outPutNeuron;
-						
-						double estimatedResultScaled=scaleParams(1, 0, xMax, xMin, Double.valueOf(params[params.length-1]));
-						if(outPutNeuron!=estimatedResultScaled)
-							this.backPropagation(estimatedResultScaled);
+						finalOutput=outPutNeuron;
 						outPutNeuron=0.0;
 					}
 				}
+				double estimatedResultScaled=scaleParams(1, 0, xMax, xMin, Double.valueOf(params[params.length-1]));
+				if(finalOutput!=estimatedResultScaled)
+					this.backPropagation(estimatedResultScaled);
 			}
+		}
 		//System.out.println(this.results);
 	}
 	
@@ -171,7 +174,8 @@ public class Tensor {
 				summatori=0.0;
 			}
 		}
-		
+		//System.out.println(this.tensor+"\n\n");
+		//System.out.println(this.results+"\n\n");
 		//System.out.println(this.deltasList);
 		//here, we calculate all errors of weights
 		for (int j=this.deltasList.getArrayList().size()-1; j>0; j--) { //this j is the actual layer
@@ -182,8 +186,15 @@ public class Tensor {
 					weigth=this.changesWeigth.get(j-1).getRelation()[k][l];
 					this.changesWeigth.get(j-1).getRelation()[k][l]=
 							(momentum*weigth)-(learningRate*deltaAuxiliar*result);
-					this.tensor.get(j-1).getRelation()[k][l]=this.tensor.get(j-1).getRelation()[k][l]+
-							(momentum*weigth)-(learningRate*deltaAuxiliar*result);
+				}
+			}
+		}
+		
+		for (int j=this.deltasList.getArrayList().size()-1; j>0; j--) { //this j is the actual layer
+			for(int k=0; k<this.deltasList.getArrayList().get(j).length; k++) {
+				deltaAuxiliar=this.deltasList.getArrayList().get(j)[k];
+				for(int l=0; l<this.changesWeigth.get(j-1).getRelation()[k].length; l++) {				
+					this.tensor.get(j-1).getRelation()[k][l]+=this.changesWeigth.get(j-1).getRelation()[k][l];
 				}
 			}
 		}
@@ -195,8 +206,12 @@ public class Tensor {
 				threeHoldAuxiliar=this.changesThreeHold.getArrayList().get(j)[k];
 				this.changesThreeHold.getArrayList().get(j)[k]=
 						(learningRate*deltaAuxiliar)+(momentum*threeHoldAuxiliar);
-				this.threeHold.getArrayList().get(j)[k]=this.threeHold.getArrayList().get(j)[k]+
-						(learningRate*deltaAuxiliar)+(momentum*threeHoldAuxiliar);
+			}
+		}
+		
+		for (int j=this.deltasList.getArrayList().size()-1; j>0; j--) { //this j is the actual layer
+			for(int k=0; k<this.deltasList.getArrayList().get(j).length; k++) {
+				this.threeHold.getArrayList().get(j)[k]+=this.changesThreeHold.getArrayList().get(j)[k];
 			}
 		}
 	}

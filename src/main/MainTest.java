@@ -12,7 +12,7 @@ public class MainTest {
 	public static String readTestData() throws IOException {
 		
 		try {
-			BufferedReader reader = new BufferedReader(new FileReader("src/testData/test3.csv"));
+			BufferedReader reader = new BufferedReader(new FileReader("src/testData/test2.csv"));
 			String line;
 			StringBuilder content = new StringBuilder();
 			
@@ -40,7 +40,7 @@ public class MainTest {
 		tensor.initializeTensor(listNodes);
 		try {
 			data=MainTest.readTestData();
-			tensor.train(data,100,0,5);
+			tensor.train(data,50,0,2);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -48,10 +48,10 @@ public class MainTest {
 		
 		System.out.println(tensor);
 		//System.out.println(tensor.execute("0 0", 10, 0));
-		System.out.println(tensor.execute("4 4", 100, 0));
-		System.out.println(tensor.execute("5 5", 100, 0));
-		System.out.println(tensor.execute("4 4", 100, 0));
-		System.out.println(tensor.execute("4 4", 100, 0));
+		System.out.println(tensor.execute("2 2", 50, 0));
+		System.out.println(tensor.execute("5 10", 50, 0));
+		System.out.println(tensor.execute("1 1", 50, 0));
+		System.out.println(tensor.execute("3 9", 50, 0));
 	}
 
 }
