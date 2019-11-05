@@ -144,6 +144,20 @@ public class Tensor {
 	}
 	
 	private void backPropagation(double estimatedResult) {
+				
+		calculateDelta(estimatedResult);
+		
+		//System.out.println(this.tensor+"\n\n");
+		//System.out.println(this.results+"\n\n");
+		//System.out.println(this.deltasList);
+		
+		calculateErrorWeight(); //here, we calculate all errors of weights
+		calculateErrorThresHold(); //here we calculate all errors of vias
+		updateWeigth();
+		updateThresHolds();		
+	}
+	
+	private void calculateDelta(double estimatedResult) {
 		ArrayList<Double[]> results=this.results.getArrayList();
 		double result=results.get(results.size()-1)[0];
 		double derivatedResult=this.sigmoidDerivate(result);
@@ -157,7 +171,6 @@ public class Tensor {
 		double summatori=0.0;
 		double weigth=0.0;
 		double deltaAuxiliar=0.0;
-		double threeHoldAuxiliar=0.0;
 		
 		for (int j=results.size()-2; j>0; j--) { //this j is the actual layer
 			for (int k=0; k<results.get(j).length; k++) {
@@ -176,10 +189,14 @@ public class Tensor {
 				summatori=0.0;
 			}
 		}
-		//System.out.println(this.tensor+"\n\n");
-		//System.out.println(this.results+"\n\n");
-		//System.out.println(this.deltasList);
-		//here, we calculate all errors of weights
+	}
+	
+	private void calculateErrorWeight() {
+		ArrayList<Double[]> results=this.results.getArrayList();
+		double result=results.get(results.size()-1)[0];
+		double weigth=0.0;
+		double deltaAuxiliar=0.0;
+		
 		for (int j=this.deltasList.getArrayList().size()-1; j>0; j--) { //this j is the actual layer
 			for(int k=0; k<this.deltasList.getArrayList().get(j).length; k++) {
 				deltaAuxiliar=this.deltasList.getArrayList().get(j)[k];
@@ -191,17 +208,12 @@ public class Tensor {
 				}
 			}
 		}
+	}
+	
+	private void calculateErrorThresHold() {
+		double threeHoldAuxiliar=0.0;
+		double deltaAuxiliar=0.0;
 		
-		for (int j=this.deltasList.getArrayList().size()-1; j>0; j--) { //this j is the actual layer
-			for(int k=0; k<this.deltasList.getArrayList().get(j).length; k++) {
-				deltaAuxiliar=this.deltasList.getArrayList().get(j)[k];
-				for(int l=0; l<this.changesWeigth.get(j-1).getRelation()[k].length; l++) {				
-					this.tensor.get(j-1).getRelation()[k][l]+=this.changesWeigth.get(j-1).getRelation()[k][l];
-				}
-			}
-		}
-		
-		//here we calculate all errors of vias
 		for (int j=this.deltasList.getArrayList().size()-1; j>0; j--) { //this j is the actual layer
 			for(int k=0; k<this.deltasList.getArrayList().get(j).length; k++) {
 				deltaAuxiliar=this.deltasList.getArrayList().get(j)[k];
@@ -210,9 +222,21 @@ public class Tensor {
 						(learningRate*deltaAuxiliar)+(momentum*threeHoldAuxiliar);
 			}
 		}
-		
-		for (int j=this.deltasList.getArrayList().size()-1; j>0; j--) { //this j is the actual layer
-			for(int k=0; k<this.deltasList.getArrayList().get(j).length; k++) {
+	}
+	
+	private void updateWeigth() {
+		for (int j=this.changesWeigth.size()-1; j>0; j--) { //this j is the actual layer
+			for(int k=0; k<this.changesWeigth.get(j).getRelation().length; k++) {
+				for(int l=0; l<this.changesWeigth.get(j).getRelation()[k].length; l++) {				
+					this.tensor.get(j).getRelation()[k][l]+=this.changesWeigth.get(j).getRelation()[k][l];
+				}
+			}
+		}
+	}
+	
+	private void updateThresHolds() {
+		for (int j=this.changesThreeHold.getArrayList().size()-1; j>0; j--) { //this j is the actual layer
+			for(int k=0; k<this.changesThreeHold.getArrayList().get(j).length; k++) {
 				this.threeHold.getArrayList().get(j)[k]+=this.changesThreeHold.getArrayList().get(j)[k];
 			}
 		}

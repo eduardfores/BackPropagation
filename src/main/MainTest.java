@@ -34,7 +34,7 @@ public class MainTest {
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		Tensor tensor = new Tensor();
-		int listNodes[] = {2,5,10,5,1};
+		int listNodes[] = {2,3,4,1};
 		String data;
 		
 		tensor.initializeTensor(listNodes);
