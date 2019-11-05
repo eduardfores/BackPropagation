@@ -106,30 +106,7 @@ public class Tensor {
 				}
 				//System.out.println(this.results);
 				
-				Double actualRelation=0.0;
-				Double neuronResult=0.0;
-				Double threeHold=0.0;
-				Double outPutNeuron=0.0;
-				double finalOutput= 0.0;
-				
-				for (int j=0; j<this.tensor.size();j++) { //this j is the actual layer
-					for(int k=0; k<this.tensor.get(j).getRelation().length; k++) { //this k is the number of neurons of the actual layer
-						for(int l=0; l<this.tensor.get(j).getRelation()[k].length; l++) { //this l is the number of neurons of the last layer
-							actualRelation=this.tensor.get(j).getRelation()[k][l];
-							neuronResult=this.results.getArrayList().get(j)[l];
-							threeHold=this.threeHold.getArrayList().get(j+1)[k]; //we want the threeHold from the actual neuron
-							
-							outPutNeuron=outPutNeuron+(actualRelation*neuronResult);
-						}
-						outPutNeuron-=threeHold;
-						outPutNeuron=sigmoid(outPutNeuron);
-						
-						if((j+1)<this.results.getArrayList().size())
-							this.results.getArrayList().get(j+1)[k]=outPutNeuron;
-						finalOutput=outPutNeuron;
-						outPutNeuron=0.0;
-					}
-				}
+				double finalOutput=feedForward(str, xMax, xMin, epochs);
 				double estimatedResultScaled=scaleParams(1, 0, xMax, xMin, Double.valueOf(params[params.length-1]));
 				if(finalOutput!=estimatedResultScaled)
 					this.backPropagation(estimatedResultScaled);
