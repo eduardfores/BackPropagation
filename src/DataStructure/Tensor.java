@@ -9,8 +9,8 @@ import com.sun.org.apache.xalan.internal.xsltc.compiler.sym;
 public class Tensor {
 
 	private static final double learningRate= 0.1;
-	private static final double momentum=0.1;
-	private static final double MAX=50;
+	private static final double momentum=0.9;
+	private static final double MAX=20;
 	
 	private HashMap<Integer, Relation> tensor;
 	private ListOfList results;
