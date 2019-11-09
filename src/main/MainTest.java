@@ -34,13 +34,13 @@ public class MainTest {
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		Tensor tensor = new Tensor();
-		int listNodes[] = {2,5,10,5,3,1};
+		int listNodes[] = {2,10,1};
 		String data;
 		
 		tensor.initializeTensor(listNodes);
 		try {
 			data=MainTest.readTestData();
-			tensor.train(data,20,0,10);
+			tensor.train(data,20,0,300);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -51,7 +51,8 @@ public class MainTest {
 		System.out.println(tensor.execute("2 2", 20, 0));
 		System.out.println(tensor.execute("5 10", 20, 0));
 		System.out.println(tensor.execute("1 1", 20, 0));
-		System.out.println(tensor.execute("3 9", 20, 0));
+		System.out.println(tensor.execute("3 8", 20, 0));
+		System.out.println(tensor.execute("9 9", 20, 0));
 	}
 
 }
