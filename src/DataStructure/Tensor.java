@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Random;
 
-import com.sun.org.apache.xalan.internal.xsltc.compiler.sym;
+import Graphics.ScatterPlot;
 
 public class Tensor {
 
@@ -19,6 +19,8 @@ public class Tensor {
 	private HashMap<Integer, Relation> changesWeigth;
 	private ListOfList changesThreeHold;
 	
+	private ScatterPlot graph;
+	
 	public Tensor() {
 		this.tensor=new HashMap<Integer, Relation>();
 		this.results=new ListOfList();
@@ -26,6 +28,7 @@ public class Tensor {
 		this.deltasList= new ListOfList();
 		this.changesWeigth= new HashMap<Integer, Relation>();
 		this.changesThreeHold= new ListOfList();
+		this.graph=new ScatterPlot("Plot Error");
 	}
 	
 	/*
@@ -108,10 +111,15 @@ public class Tensor {
 				
 				double finalOutput=feedForward(str, xMax, xMin, epochs);
 				double estimatedResultScaled=scaleParams(1, 0, xMax, xMin, Double.valueOf(params[params.length-1]));
+				
+				this.graph.add(this.unscaleParams(1, 0, MAX, 0, finalOutput), this.unscaleParams(1, 0, MAX, 0, estimatedResultScaled));
+				
 				if(finalOutput!=estimatedResultScaled)
 					this.backPropagation(estimatedResultScaled);
 			}
 		}
+		
+		this.graph.visualize();
 	}
 	
 	private double feedForward(String str, double xMax, double xMin, int epochs) {			

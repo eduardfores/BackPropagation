@@ -9,10 +9,12 @@ import DataStructure.Tensor;
 
 public class MainTest {
 
+	private static BufferedReader reader;
+
 	public static String readTestData() throws IOException {
 		
 		try {
-			BufferedReader reader = new BufferedReader(new FileReader("src/testData/test4.csv"));
+			reader = new BufferedReader(new FileReader("src/testData/test4.csv"));
 			String line;
 			StringBuilder content = new StringBuilder();
 			
@@ -40,14 +42,14 @@ public class MainTest {
 		tensor.initializeTensor(listNodes);
 		try {
 			data=MainTest.readTestData();
-			tensor.train(data,20,0,300);
+			tensor.train(data,20,0,1000);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
 		System.out.println(tensor);
-		//System.out.println(tensor.execute("0 0", 10, 0));
+		System.out.println(tensor.execute("2 1", 20, 0));
 		System.out.println(tensor.execute("2 2", 20, 0));
 		System.out.println(tensor.execute("5 10", 20, 0));
 		System.out.println(tensor.execute("1 1", 20, 0));
