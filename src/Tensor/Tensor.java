@@ -13,9 +13,11 @@ public class Tensor {
 	private static final double sMAX = 1;
 	private static final double sMIN = 0;
 	private static final double xMIN = 0;
+	private static final int kFold=4;
 	private double[] maxs;
 	
 	
+	private ListOfList dataSet;
 	private HashMap<Integer, Relation> tensor;
 	private ListOfList results;
 	private ListOfList threeHold;
@@ -32,6 +34,7 @@ public class Tensor {
 		this.deltasList = new ListOfList();
 		this.changesWeigth = new HashMap<Integer, Relation>();
 		this.changesThreeHold = new ListOfList();
+		this.dataSet=new ListOfList();
 		this.graph = new ScatterPlot("Plot Error");
 	}
 
@@ -80,14 +83,11 @@ public class Tensor {
 		Double outPutNeuron = 0.0;
 
 		for (int j = 0; j < this.tensor.size(); j++) { // this j is the actual layer
-			for (int k = 0; k < this.tensor.get(j).getRelation().length; k++) { // this k is the number of neurons of
-																				// the actual layer
-				for (int l = 0; l < this.tensor.get(j).getRelation()[k].length; l++) { // this l is the number of
-																						// neurons of the last layer
+			for (int k = 0; k < this.tensor.get(j).getRelation().length; k++) { // this k is the number of neurons of the actual layer
+				for (int l = 0; l < this.tensor.get(j).getRelation()[k].length; l++) { // this l is the number of neurons of the last layer
 					actualRelation = this.tensor.get(j).getRelation()[k][l];
 					neuronResult = this.results.getArrayList().get(j)[l];
-					threeHold = this.threeHold.getArrayList().get(j + 1)[k]; // we want the threeHold from the actual
-																			// neuron
+					threeHold = this.threeHold.getArrayList().get(j + 1)[k]; // we want the threeHold from the actual neuron
 					outPutNeuron = outPutNeuron + (actualRelation * neuronResult);
 				}
 				outPutNeuron -= threeHold;
@@ -300,6 +300,27 @@ public class Tensor {
 				}
 			}
 		}
+	}
+	
+	private void processDataSet(String data[]) {
+		int lenghtSet=data.length/kFold;
+		int firstSet;
+		int finalSet;
+		
+		for(int i=0; i<kFold; i++) {
+			finalSet=(i != kFold-1)?((data.length)-(lenghtSet*(i+1))) : 0;
+			firstSet=((data.length)-(lenghtSet*i));
+			
+			for(int j=firstSet; j<finalSet; j++) {
+				String[] params = data[i].split(" ");
+				Double[] pattern = new Double[params.length];
+				for(int k=0; k<params.length; k++) {
+					pattern[k]=scaleParams(sMAX, sMIN, this.maxs[k], xMIN, Double.valueOf(params[k]));
+				}
+				this.dataSet.addList(pattern);
+			}
+		}
+		
 	}
 	
 	@Override

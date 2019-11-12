@@ -53,6 +53,10 @@ public class ListOfList {
 		this.arrayList = arrayList;
 	}
 
+	public void addList(Double list[]) {
+		this.arrayList.add(list);
+	}
+	
 	@Override
 	public String toString() {
 		String aux="";
