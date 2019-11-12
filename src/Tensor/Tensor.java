@@ -7,12 +7,12 @@ import Graphics.ScatterPlot;
 
 public class Tensor {
 
-	private static final double learningRate = 0.1;
+	private static final double learningRate = 0.05;
 	private static final double momentum = 0.9;
 	private static final double sMAX = 0.9;
 	private static final double sMIN = 0.1;
 	private static final double xMIN = 0;
-	private static final int kFold = 4;
+	private static final int kFold = 4; //k-Fold Cross-Validation
 	private double[] maxs;
 
 	private CrossValidationList dataSet;
@@ -81,14 +81,11 @@ public class Tensor {
 		Double outPutNeuron = 0.0;
 
 		for (int j = 0; j < this.tensor.size(); j++) { // this j is the actual layer
-			for (int k = 0; k < this.tensor.get(j).getRelation().length; k++) { // this k is the number of neurons of
-																				// the actual layer
-				for (int l = 0; l < this.tensor.get(j).getRelation()[k].length; l++) { // this l is the number of
-																						// neurons of the last layer
+			for (int k = 0; k < this.tensor.get(j).getRelation().length; k++) { // this k is the number of neurons of the actual layer
+				for (int l = 0; l < this.tensor.get(j).getRelation()[k].length; l++) { // this l is the number of neurons of the last layer
 					actualRelation = this.tensor.get(j).getRelation()[k][l];
 					neuronResult = this.results.getArrayList().get(j)[l];
-					threeHold = this.threeHold.getArrayList().get(j + 1)[k]; // we want the threeHold from the actual
-																				// neuron
+					threeHold = this.threeHold.getArrayList().get(j + 1)[k]; // we want the threeHold from the actual neuron
 					outPutNeuron = outPutNeuron + (actualRelation * neuronResult);
 				}
 				outPutNeuron -= threeHold;
@@ -109,33 +106,30 @@ public class Tensor {
 	 * This function use the FeddForward and the BP to train the Neural Network. It
 	 * use The variable graph to calculate the error of Neural Network.
 	 */
-	public void train(String str, int epochs) {
+	public void train(String str, int epochs, int testPatterns) {
 		String[] data = str.split("\n");
 		this.calculateMaxsOfDataSet(data);
-		this.processDataSet(data);
+		this.processDataSet(data, testPatterns);
 
 		for (int c = 0; c < kFold; c++) {
 			for (int e = 0; e < epochs; e++) {
-				for (int p = 0; p < this.dataSet.getDataSet(c).size(); p++) {
-					
-					Double[] pattern=this.dataSet.getPattern(c, p);
-					double estimatedResultScaled = pattern[pattern.length-1];
+				for (int p = 0; p < this.dataSet.getDataSet(c).size() - 1; p++) {
+
+					Double[] pattern = this.dataSet.getPattern(c, p);
+					double estimatedResultScaled = pattern[pattern.length - 1];
 					for (int j = 0; j < results.getArrayList().get(0).length; j++) {
 						results.getArrayList().get(0)[j] = pattern[j];
 					}
 
 					double finalOutput = this.feedForward();
-					
-					this.graph.add(this.unscaleParams(1, 0, maxs[maxs.length - 1], 0, finalOutput),
-							this.unscaleParams(1, 0, maxs[maxs.length - 1], 0, estimatedResultScaled));
-
 					if (finalOutput != estimatedResultScaled)
 						this.backPropagation(estimatedResultScaled);
 				}
 			}
 		}
+		
+		this.test();
 
-		this.graph.visualize();
 	}
 
 	private double feedForward() {
@@ -281,7 +275,8 @@ public class Tensor {
 	}
 
 	/*
-	 * This function calulate all maxs of each parameter of the patterns to scale it correctly
+	 * This function calulate all maxs of each parameter of the patterns to scale it
+	 * correctly
 	 */
 	private void calculateMaxsOfDataSet(String data[]) {
 		this.maxs = new double[data[0].split(" ").length]; // initialize the array according the dataset
@@ -306,16 +301,18 @@ public class Tensor {
 	}
 
 	/*
-	 * This function process the DataSet to do the cross-validation and scaling the parameters with the max searched previously
+	 * This function process the DataSet to do the cross-validation and scaling the
+	 * parameters with the max searched previously
 	 */
-	private void processDataSet(String data[]) {
-		int lenghtSet = data.length / kFold;
+	private void processDataSet(String data[], int testPatterns) {
+		int crossDataLength = (data.length - testPatterns);
+		int lenghtSet = crossDataLength / kFold;
 		int firstSet;
 		int finalSet;
 
 		for (int i = 0; i < kFold; i++) {
-			firstSet = (i != kFold - 1) ? ((data.length) - (lenghtSet * (i + 1))) : 0;
-			finalSet = ((data.length) - (lenghtSet * i));
+			firstSet = (i != kFold - 1) ? ((crossDataLength) - (lenghtSet * (i + 1))) : 0;
+			finalSet = ((crossDataLength) - (lenghtSet * i));
 			ArrayList<Double[]> auxList = new ArrayList<>();
 
 			for (int j = firstSet; j < finalSet; j++) {
@@ -329,6 +326,36 @@ public class Tensor {
 			this.dataSet.addDataList(auxList);
 		}
 
+		ArrayList<Double[]> auxList = new ArrayList<>();
+
+		for (int j = crossDataLength; j < data.length; j++) {
+			String[] params = data[j].split(" ");
+			Double[] pattern = new Double[params.length];
+			for (int k = 0; k < params.length; k++) {
+				pattern[k] = scaleParams(sMAX, sMIN, this.maxs[k], xMIN, Double.valueOf(params[k]));
+			}
+			auxList.add(pattern);
+		}
+		this.dataSet.addDataList(auxList);
+
+	}
+
+	private void test() {
+		for (int p = 0; p < this.dataSet.getDataSet(kFold).size() - 1; p++) {
+
+			Double[] pattern = this.dataSet.getPattern(kFold, p);
+			double estimatedResultScaled = pattern[pattern.length - 1];
+			for (int j = 0; j < results.getArrayList().get(0).length; j++) {
+				results.getArrayList().get(0)[j] = pattern[j];
+			}
+
+			double finalOutput = this.feedForward();
+
+			this.graph.add(this.unscaleParams(1, 0, maxs[maxs.length - 1], 0, finalOutput),
+					this.unscaleParams(1, 0, maxs[maxs.length - 1], 0, estimatedResultScaled));
+		}
+
+		this.graph.visualize();
 	}
 
 	@Override

@@ -9,10 +9,12 @@ import Tensor.Tensor;
 
 public class MainTest {
 
+	private static BufferedReader reader;
+
 	public static String readTestData() throws IOException {
 		
 		try {
-			BufferedReader reader = new BufferedReader(new FileReader("src/testData/test4.csv"));
+			reader = new BufferedReader(new FileReader("src/testData/test4.csv"));
 			String line;
 			StringBuilder content = new StringBuilder();
 			
@@ -40,7 +42,7 @@ public class MainTest {
 		tensor.initializeTensor(listNodes);
 		try {
 			data=MainTest.readTestData();
-			tensor.train(data,500);
+			tensor.train(data,500,5);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
