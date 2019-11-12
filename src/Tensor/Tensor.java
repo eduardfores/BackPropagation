@@ -2,7 +2,6 @@ package Tensor;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Random;
 
 import Graphics.ScatterPlot;
 
@@ -10,8 +9,8 @@ public class Tensor {
 
 	private static final double learningRate = 0.1;
 	private static final double momentum = 0.9;
-	private static final double sMAX = 1;
-	private static final double sMIN = 0;
+	private static final double sMAX = 0.9;
+	private static final double sMIN = 0.1;
 	private static final double xMIN = 0;
 	private static final int kFold = 4;
 	private double[] maxs;
@@ -65,14 +64,14 @@ public class Tensor {
 	 * This function use only the feed forward to use the Neural Network to predict
 	 * some result.
 	 */
-	public double execute(String str, double xMax, double xMin) {
+	public double execute(String str) {
 		double output = 0.0;
 		String[] data = str.split(" ");
 
 		Double input = null;
 		// take the first params that we must input in the NN
 		for (int j = 0; j < results.getArrayList().get(0).length; j++) {
-			input = scaleParams(sMAX, sMIN, maxs[j], xMin, Double.valueOf(data[j]));
+			input = scaleParams(sMAX, sMIN, maxs[j], xMIN, Double.valueOf(data[j]));
 			results.getArrayList().get(0)[j] = input;
 		}
 
@@ -110,7 +109,7 @@ public class Tensor {
 	 * This function use the FeddForward and the BP to train the Neural Network. It
 	 * use The variable graph to calculate the error of Neural Network.
 	 */
-	public void train(String str, double xMax, double xMin, int epochs) {
+	public void train(String str, int epochs) {
 		String[] data = str.split("\n");
 		this.calculateMaxsOfDataSet(data);
 		this.processDataSet(data);
@@ -281,6 +280,9 @@ public class Tensor {
 		return (xMin + (((xMax - xMin) / (sMax - sMin)) * (s - sMin)));
 	}
 
+	/*
+	 * This function calulate all maxs of each parameter of the patterns to scale it correctly
+	 */
 	private void calculateMaxsOfDataSet(String data[]) {
 		this.maxs = new double[data[0].split(" ").length]; // initialize the array according the dataset
 
@@ -303,6 +305,9 @@ public class Tensor {
 		}
 	}
 
+	/*
+	 * This function process the DataSet to do the cross-validation and scaling the parameters with the max searched previously
+	 */
 	private void processDataSet(String data[]) {
 		int lenghtSet = data.length / kFold;
 		int firstSet;

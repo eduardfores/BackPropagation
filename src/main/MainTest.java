@@ -40,7 +40,7 @@ public class MainTest {
 		tensor.initializeTensor(listNodes);
 		try {
 			data=MainTest.readTestData();
-			tensor.train(data,20,0,500);
+			tensor.train(data,500);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -48,10 +48,10 @@ public class MainTest {
 		
 		System.out.println(tensor);
 		//System.out.println(tensor.execute("0 0", 10, 0));
-		System.out.println(tensor.execute("2 2", 20, 0));
-		System.out.println(tensor.execute("5 10", 20, 0));
-		System.out.println(tensor.execute("1 1", 20, 0));
-		System.out.println(tensor.execute("3 9", 20, 0));
+		System.out.println(tensor.execute("2 2"));
+		System.out.println(tensor.execute("5 10"));
+		System.out.println(tensor.execute("1 1"));
+		System.out.println(tensor.execute("3 9"));
 	}
 
 }
