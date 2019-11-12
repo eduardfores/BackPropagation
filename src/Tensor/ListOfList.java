@@ -1,4 +1,4 @@
-package DataStructure;
+package Tensor;
 
 import java.util.ArrayList;
 import java.util.Random;

@@ -5,7 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 
-import DataStructure.Tensor;
+import Tensor.Tensor;
 
 public class MainTurbine {
 
@@ -36,13 +36,13 @@ public class MainTurbine {
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		Tensor tensor = new Tensor();
-		int listNodes[] = { 4, 10, 10, 10, 1 };
+		int listNodes[] = { 4, 10, 1 };
 		String data;
 
 		tensor.initializeTensor(listNodes);
 		try {
 			data = MainTurbine.readTestData();
-			tensor.train(data, 9000, 0, 100000);
+			tensor.train(data, 9000, 0, 1000);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

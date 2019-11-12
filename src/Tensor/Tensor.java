@@ -1,4 +1,4 @@
-package DataStructure;
+package Tensor;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -10,10 +10,12 @@ public class Tensor {
 
 	private static final double learningRate = 0.1;
 	private static final double momentum = 0.9;
-	private static final double sMAX = 0.9;
-	private static final double sMIN = 0.1;
-	private static final double MAX = 20;
-
+	private static final double sMAX = 1;
+	private static final double sMIN = 0;
+	private static final double xMIN = 0;
+	private double[] maxs;
+	
+	
 	private HashMap<Integer, Relation> tensor;
 	private ListOfList results;
 	private ListOfList threeHold;
@@ -68,7 +70,7 @@ public class Tensor {
 		Double input = null;
 		// take the first params that we must input in the NN
 		for (int j = 0; j < results.getArrayList().get(0).length; j++) {
-			input = scaleParams(sMAX, sMIN, xMax, xMin, Double.valueOf(data[j]));
+			input = scaleParams(sMAX, sMIN, maxs[j], xMin, Double.valueOf(data[j]));
 			results.getArrayList().get(0)[j] = input;
 		}
 
@@ -85,8 +87,7 @@ public class Tensor {
 					actualRelation = this.tensor.get(j).getRelation()[k][l];
 					neuronResult = this.results.getArrayList().get(j)[l];
 					threeHold = this.threeHold.getArrayList().get(j + 1)[k]; // we want the threeHold from the actual
-																				// neuron
-
+																			// neuron
 					outPutNeuron = outPutNeuron + (actualRelation * neuronResult);
 				}
 				outPutNeuron -= threeHold;
@@ -99,7 +100,7 @@ public class Tensor {
 				outPutNeuron = 0.0;
 			}
 		}
-		return this.unscaleParams(1, 0, MAX, 0, output);
+		return this.unscaleParams(1, 0, maxs[maxs.length-1], 0, output);
 		// return output;
 	}
 
@@ -109,6 +110,8 @@ public class Tensor {
 	 */
 	public void train(String str, double xMax, double xMin, int epochs) {
 		String[] data = str.split("\n");
+		calculateMaxsOfDataSet(data);
+		
 		for (int e = 0; e < epochs; e++) {
 			for (int i = 0; i < data.length; i++) {
 				Random rand = new Random();
@@ -116,16 +119,16 @@ public class Tensor {
 				Double input = null;
 				// take the first params that we must input in the NN
 				for (int j = 0; j < results.getArrayList().get(0).length; j++) {
-					input = scaleParams(sMAX, sMIN, xMax, xMin, Double.valueOf(params[j]));
+					input = scaleParams(sMAX, sMIN, maxs[j], xMIN, Double.valueOf(params[j]));
 					results.getArrayList().get(0)[j] = input;
 				}
 				// System.out.println(this.results);
 
-				double finalOutput = feedForward(str, xMax, xMin, epochs);
-				double estimatedResultScaled = scaleParams(sMAX, sMIN, xMax, xMin, Double.valueOf(params[params.length - 1]));
+				double finalOutput = this.feedForward();
+				double estimatedResultScaled = scaleParams(sMAX, sMIN, xMax, xMIN, Double.valueOf(params[params.length - 1]));
 
-				this.graph.add(this.unscaleParams(1, 0, MAX, 0, finalOutput),
-						this.unscaleParams(1, 0, MAX, 0, estimatedResultScaled));
+				this.graph.add(this.unscaleParams(1, 0, maxs[maxs.length-1], 0, finalOutput),
+						this.unscaleParams(1, 0, maxs[maxs.length-1], 0, estimatedResultScaled));
 
 				if (finalOutput != estimatedResultScaled)
 					this.backPropagation(estimatedResultScaled);
@@ -135,7 +138,7 @@ public class Tensor {
 		this.graph.visualize();
 	}
 
-	private double feedForward(String str, double xMax, double xMin, int epochs) {
+	private double feedForward() {
 		Double actualRelation = 0.0;
 		Double neuronResult = 0.0;
 		Double threeHold = 0.0;
@@ -277,6 +280,28 @@ public class Tensor {
 		return (xMin + (((xMax - xMin) / (sMax - sMin)) * (s - sMin)));
 	}
 
+	private void calculateMaxsOfDataSet(String data[]) {
+		this.maxs=new double[data[0].split(" ").length]; //initialize the array according the dataset
+		
+		for (int i = 0; i < this.maxs.length; i++) {
+			this.maxs[i]=0.0;
+		}
+		
+		for(int i=0; i<data.length; i++) {
+			String[] params = data[i].split(" ");
+			for (int j = 0; j < params.length; j++) {
+				Double aux=Double.parseDouble(params[j]);
+				if(this.maxs[j]==0.0) {
+					this.maxs[j]= aux;
+				}else {
+					if(this.maxs[j]<aux) {
+						this.maxs[j]=aux;
+					}
+				}
+			}
+		}
+	}
+	
 	@Override
 	public String toString() {
 		String aux = "";
@@ -285,5 +310,4 @@ public class Tensor {
 		}
 		return aux;
 	}
-
 }
