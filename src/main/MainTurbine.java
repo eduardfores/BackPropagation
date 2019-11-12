@@ -49,8 +49,8 @@ public class MainTurbine {
 		}
 
 		System.out.println(tensor);
-		System.out.println(tensor.execute("598.00 63.940 62.920 5.500"));
-		System.out.println(tensor.execute("618.00 82.690 81.540 8.000"));
+		System.out.println(tensor.execute("607.00 71.690 70.540 8.000"));
+		System.out.println(tensor.execute("610.00 75.040 75.365 4.500"));
 	}
 
 }

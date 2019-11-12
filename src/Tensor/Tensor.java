@@ -103,8 +103,8 @@ public class Tensor {
 	}
 
 	/*
-	 * This function use the FeddForward and the BP to train the Neural Network. It
-	 * use The variable graph to calculate the error of Neural Network.
+	 * This function use the FeddForward and the BP to train the Neural Network. 
+	 * And use the test function to calculate the test error
 	 */
 	public void train(String str, int epochs, int testPatterns) {
 		String[] data = str.split("\n");
@@ -340,6 +340,10 @@ public class Tensor {
 
 	}
 
+	/*
+	 * Do the same as the execute function but this function 
+	 * use The variable graph to calculate the error of Neural Network.
+	 */
 	private void test() {
 		for (int p = 0; p < this.dataSet.getDataSet(kFold).size() - 1; p++) {
 
