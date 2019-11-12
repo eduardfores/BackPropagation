@@ -10,6 +10,8 @@ public class Tensor {
 
 	private static final double learningRate = 0.1;
 	private static final double momentum = 0.9;
+	private static final double sMAX = 0.9;
+	private static final double sMIN = 0.1;
 	private static final double MAX = 20;
 
 	private HashMap<Integer, Relation> tensor;
@@ -66,7 +68,7 @@ public class Tensor {
 		Double input = null;
 		// take the first params that we must input in the NN
 		for (int j = 0; j < results.getArrayList().get(0).length; j++) {
-			input = scaleParams(1, 0, xMax, xMin, Double.valueOf(data[j]));
+			input = scaleParams(sMAX, sMIN, xMax, xMin, Double.valueOf(data[j]));
 			results.getArrayList().get(0)[j] = input;
 		}
 
@@ -114,13 +116,13 @@ public class Tensor {
 				Double input = null;
 				// take the first params that we must input in the NN
 				for (int j = 0; j < results.getArrayList().get(0).length; j++) {
-					input = scaleParams(1, 0, xMax, xMin, Double.valueOf(params[j]));
+					input = scaleParams(sMAX, sMIN, xMax, xMin, Double.valueOf(params[j]));
 					results.getArrayList().get(0)[j] = input;
 				}
 				// System.out.println(this.results);
 
 				double finalOutput = feedForward(str, xMax, xMin, epochs);
-				double estimatedResultScaled = scaleParams(1, 0, xMax, xMin, Double.valueOf(params[params.length - 1]));
+				double estimatedResultScaled = scaleParams(sMAX, sMIN, xMax, xMin, Double.valueOf(params[params.length - 1]));
 
 				this.graph.add(this.unscaleParams(1, 0, MAX, 0, finalOutput),
 						this.unscaleParams(1, 0, MAX, 0, estimatedResultScaled));
