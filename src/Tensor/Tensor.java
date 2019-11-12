@@ -13,11 +13,10 @@ public class Tensor {
 	private static final double sMAX = 1;
 	private static final double sMIN = 0;
 	private static final double xMIN = 0;
-	private static final int kFold=4;
+	private static final int kFold = 4;
 	private double[] maxs;
-	
-	
-	private ListOfList dataSet;
+
+	private CrossValidationList dataSet;
 	private HashMap<Integer, Relation> tensor;
 	private ListOfList results;
 	private ListOfList threeHold;
@@ -34,7 +33,7 @@ public class Tensor {
 		this.deltasList = new ListOfList();
 		this.changesWeigth = new HashMap<Integer, Relation>();
 		this.changesThreeHold = new ListOfList();
-		this.dataSet=new ListOfList();
+		this.dataSet = new CrossValidationList();
 		this.graph = new ScatterPlot("Plot Error");
 	}
 
@@ -83,11 +82,14 @@ public class Tensor {
 		Double outPutNeuron = 0.0;
 
 		for (int j = 0; j < this.tensor.size(); j++) { // this j is the actual layer
-			for (int k = 0; k < this.tensor.get(j).getRelation().length; k++) { // this k is the number of neurons of the actual layer
-				for (int l = 0; l < this.tensor.get(j).getRelation()[k].length; l++) { // this l is the number of neurons of the last layer
+			for (int k = 0; k < this.tensor.get(j).getRelation().length; k++) { // this k is the number of neurons of
+																				// the actual layer
+				for (int l = 0; l < this.tensor.get(j).getRelation()[k].length; l++) { // this l is the number of
+																						// neurons of the last layer
 					actualRelation = this.tensor.get(j).getRelation()[k][l];
 					neuronResult = this.results.getArrayList().get(j)[l];
-					threeHold = this.threeHold.getArrayList().get(j + 1)[k]; // we want the threeHold from the actual neuron
+					threeHold = this.threeHold.getArrayList().get(j + 1)[k]; // we want the threeHold from the actual
+																				// neuron
 					outPutNeuron = outPutNeuron + (actualRelation * neuronResult);
 				}
 				outPutNeuron -= threeHold;
@@ -100,7 +102,7 @@ public class Tensor {
 				outPutNeuron = 0.0;
 			}
 		}
-		return this.unscaleParams(1, 0, maxs[maxs.length-1], 0, output);
+		return this.unscaleParams(1, 0, maxs[maxs.length - 1], 0, output);
 		// return output;
 	}
 
@@ -110,28 +112,27 @@ public class Tensor {
 	 */
 	public void train(String str, double xMax, double xMin, int epochs) {
 		String[] data = str.split("\n");
-		calculateMaxsOfDataSet(data);
-		
-		for (int e = 0; e < epochs; e++) {
-			for (int i = 0; i < data.length; i++) {
-				Random rand = new Random();
-				String[] params = data[rand.nextInt(data.length)].split(" "); // take one list with params + result
-				Double input = null;
-				// take the first params that we must input in the NN
-				for (int j = 0; j < results.getArrayList().get(0).length; j++) {
-					input = scaleParams(sMAX, sMIN, maxs[j], xMIN, Double.valueOf(params[j]));
-					results.getArrayList().get(0)[j] = input;
+		this.calculateMaxsOfDataSet(data);
+		this.processDataSet(data);
+
+		for (int c = 0; c < kFold; c++) {
+			for (int e = 0; e < epochs; e++) {
+				for (int p = 0; p < this.dataSet.getDataSet(c).size(); p++) {
+					
+					Double[] pattern=this.dataSet.getPattern(c, p);
+					double estimatedResultScaled = pattern[pattern.length-1];
+					for (int j = 0; j < results.getArrayList().get(0).length; j++) {
+						results.getArrayList().get(0)[j] = pattern[j];
+					}
+
+					double finalOutput = this.feedForward();
+					
+					this.graph.add(this.unscaleParams(1, 0, maxs[maxs.length - 1], 0, finalOutput),
+							this.unscaleParams(1, 0, maxs[maxs.length - 1], 0, estimatedResultScaled));
+
+					if (finalOutput != estimatedResultScaled)
+						this.backPropagation(estimatedResultScaled);
 				}
-				// System.out.println(this.results);
-
-				double finalOutput = this.feedForward();
-				double estimatedResultScaled = scaleParams(sMAX, sMIN, xMax, xMIN, Double.valueOf(params[params.length - 1]));
-
-				this.graph.add(this.unscaleParams(1, 0, maxs[maxs.length-1], 0, finalOutput),
-						this.unscaleParams(1, 0, maxs[maxs.length-1], 0, estimatedResultScaled));
-
-				if (finalOutput != estimatedResultScaled)
-					this.backPropagation(estimatedResultScaled);
 			}
 		}
 
@@ -281,48 +282,50 @@ public class Tensor {
 	}
 
 	private void calculateMaxsOfDataSet(String data[]) {
-		this.maxs=new double[data[0].split(" ").length]; //initialize the array according the dataset
-		
+		this.maxs = new double[data[0].split(" ").length]; // initialize the array according the dataset
+
 		for (int i = 0; i < this.maxs.length; i++) {
-			this.maxs[i]=0.0;
+			this.maxs[i] = 0.0;
 		}
-		
-		for(int i=0; i<data.length; i++) {
+
+		for (int i = 0; i < data.length; i++) {
 			String[] params = data[i].split(" ");
 			for (int j = 0; j < params.length; j++) {
-				Double aux=Double.parseDouble(params[j]);
-				if(this.maxs[j]==0.0) {
-					this.maxs[j]= aux;
-				}else {
-					if(this.maxs[j]<aux) {
-						this.maxs[j]=aux;
+				Double aux = Double.parseDouble(params[j]);
+				if (this.maxs[j] == 0.0) {
+					this.maxs[j] = aux;
+				} else {
+					if (this.maxs[j] < aux) {
+						this.maxs[j] = aux;
 					}
 				}
 			}
 		}
 	}
-	
+
 	private void processDataSet(String data[]) {
-		int lenghtSet=data.length/kFold;
+		int lenghtSet = data.length / kFold;
 		int firstSet;
 		int finalSet;
-		
-		for(int i=0; i<kFold; i++) {
-			finalSet=(i != kFold-1)?((data.length)-(lenghtSet*(i+1))) : 0;
-			firstSet=((data.length)-(lenghtSet*i));
-			
-			for(int j=firstSet; j<finalSet; j++) {
-				String[] params = data[i].split(" ");
+
+		for (int i = 0; i < kFold; i++) {
+			firstSet = (i != kFold - 1) ? ((data.length) - (lenghtSet * (i + 1))) : 0;
+			finalSet = ((data.length) - (lenghtSet * i));
+			ArrayList<Double[]> auxList = new ArrayList<>();
+
+			for (int j = firstSet; j < finalSet; j++) {
+				String[] params = data[j].split(" ");
 				Double[] pattern = new Double[params.length];
-				for(int k=0; k<params.length; k++) {
-					pattern[k]=scaleParams(sMAX, sMIN, this.maxs[k], xMIN, Double.valueOf(params[k]));
+				for (int k = 0; k < params.length; k++) {
+					pattern[k] = scaleParams(sMAX, sMIN, this.maxs[k], xMIN, Double.valueOf(params[k]));
 				}
-				this.dataSet.addList(pattern);
+				auxList.add(pattern);
 			}
+			this.dataSet.addDataList(auxList);
 		}
-		
+
 	}
-	
+
 	@Override
 	public String toString() {
 		String aux = "";
