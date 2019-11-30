@@ -107,7 +107,7 @@ public class Tensor {
 	 * And use the test function to calculate the test error
 	 */
 	public void train(String str, int epochs, int testPatterns) {
-		String[] data = str.split("\n");
+		String[] data = str.split(System.lineSeparator());
 		this.calculateMaxsOfDataSet(data);
 		this.processDataSet(data, testPatterns);
 
@@ -355,11 +355,11 @@ public class Tensor {
 
 			double finalOutput = this.feedForward();
 
-			this.graph.add(this.unscaleParams(1, 0, maxs[maxs.length - 1], 0, finalOutput),
+			this.graph.addWithGraph(this.unscaleParams(1, 0, maxs[maxs.length - 1], 0, finalOutput),
 					this.unscaleParams(1, 0, maxs[maxs.length - 1], 0, estimatedResultScaled));
 		}
 
-		this.graph.visualize();
+		this.graph.visualizeWithGraph();
 	}
 
 	@Override
