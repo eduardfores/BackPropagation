@@ -66,7 +66,7 @@ public class ScatterPlot extends JFrame {
 	 * This function visualize the graph with the predicted and real params. It
 	 * print the error% too.
 	 */
-	public void visualizeWithGraph() {
+	public double visualizeWithGraph() {
 		XYSeriesCollection dataset = new XYSeriesCollection();
 
 		dataset.addSeries(series1);
@@ -90,6 +90,7 @@ public class ScatterPlot extends JFrame {
 			example.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 			example.setVisible(true);
 		});
+		return this.error;
 	}
 
 	/*

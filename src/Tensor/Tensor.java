@@ -1,5 +1,7 @@
 package Tensor;
 
+import java.io.FileWriter;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -12,7 +14,7 @@ public class Tensor {
 	private static final double sMAX = 0.9;
 	private static final double sMIN = 0.1;
 	private static final double xMIN = 0;
-	private static final int kFold = 4; //k-Fold Cross-Validation
+	private static final int kFold = 4; // k-Fold Cross-Validation
 	private double[] maxs;
 
 	private CrossValidationList dataSet;
@@ -81,11 +83,14 @@ public class Tensor {
 		Double outPutNeuron = 0.0;
 
 		for (int j = 0; j < this.tensor.size(); j++) { // this j is the actual layer
-			for (int k = 0; k < this.tensor.get(j).getRelation().length; k++) { // this k is the number of neurons of the actual layer
-				for (int l = 0; l < this.tensor.get(j).getRelation()[k].length; l++) { // this l is the number of neurons of the last layer
+			for (int k = 0; k < this.tensor.get(j).getRelation().length; k++) { // this k is the number of neurons of
+																				// the actual layer
+				for (int l = 0; l < this.tensor.get(j).getRelation()[k].length; l++) { // this l is the number of
+																						// neurons of the last layer
 					actualRelation = this.tensor.get(j).getRelation()[k][l];
 					neuronResult = this.results.getArrayList().get(j)[l];
-					threeHold = this.threeHold.getArrayList().get(j + 1)[k]; // we want the threeHold from the actual neuron
+					threeHold = this.threeHold.getArrayList().get(j + 1)[k]; // we want the threeHold from the actual
+																				// neuron
 					outPutNeuron = outPutNeuron + (actualRelation * neuronResult);
 				}
 				outPutNeuron -= threeHold;
@@ -103,18 +108,18 @@ public class Tensor {
 	}
 
 	/*
-	 * This function use the FeddForward and the BP to train the Neural Network. 
-	 * And use the test function to calculate the test error
+	 * This function use the FeddForward and the BP to train the Neural Network. And
+	 * use the test function to calculate the test error
 	 */
-	public void train(String str, int epochs, int testPatterns) {
-		int percent=0;
+	public void train(String str, int epochs, int testPatterns, String fileName) {
+		int percent = 0;
 		String[] data = str.split(System.lineSeparator());
 		this.calculateMaxsOfDataSet(data);
 		this.processDataSet(data, testPatterns);
 
 		System.out.println("trainning");
-		
-		System.out.println(percent+"%");
+
+		System.out.println(percent + "%");
 		for (int c = 0; c < kFold; c++) {
 			for (int e = 0; e < epochs; e++) {
 				for (int p = 0; p < this.dataSet.getDataSet(c).size() - 1; p++) {
@@ -130,26 +135,26 @@ public class Tensor {
 						this.backPropagation(estimatedResultScaled);
 				}
 			}
-			percent+=25;
-			System.out.println(percent+"%");
+			percent += 25;
+			System.out.println(percent + "%");
 		}
-		
-		this.test();
+
+		this.test(fileName);
 
 	}
 
 	/*
 	 * This function train the neuralnetwork but use one external data to test it
 	 */
-	public void train(String str, int epochs, String file) {
-		int percent=0;
+	public void train(String str, int epochs, String file, String fileName) {
+		int percent = 0;
 		String[] data1 = str.split(System.lineSeparator());
 		String[] data2 = str.split(System.lineSeparator());
 		this.calculateMaxsOfDataSet(data1);
 		this.processDataSet(data1, data2);
 
 		System.out.println("trainning");
-		System.out.println(percent+"%");
+		System.out.println(percent + "%");
 		for (int c = 0; c < kFold; c++) {
 			for (int e = 0; e < epochs; e++) {
 				for (int p = 0; p < this.dataSet.getDataSet(c).size() - 1; p++) {
@@ -165,14 +170,14 @@ public class Tensor {
 						this.backPropagation(estimatedResultScaled);
 				}
 			}
-			percent+=25;
-			System.out.println(percent+"%");
+			percent += 25;
+			System.out.println(percent + "%");
 		}
-		
-		this.test();
+
+		this.test(fileName);
 
 	}
-	
+
 	private double feedForward() {
 		Double actualRelation = 0.0;
 		Double neuronResult = 0.0;
@@ -202,7 +207,6 @@ public class Tensor {
 			}
 		}
 		return finalOutput;
-		// System.out.println(this.results);
 	}
 
 	private void backPropagation(double estimatedResult) {
@@ -352,7 +356,7 @@ public class Tensor {
 		int firstSet;
 		int finalSet;
 
-		//first 4 data sets
+		// first 4 data sets
 		for (int i = 0; i < kFold; i++) {
 			firstSet = (i != kFold - 1) ? ((crossDataLength) - (lenghtSet * (i + 1))) : 0;
 			finalSet = ((crossDataLength) - (lenghtSet * i));
@@ -371,7 +375,7 @@ public class Tensor {
 
 		ArrayList<Double[]> auxList = new ArrayList<>();
 
-		//test data
+		// test data
 		for (int j = crossDataLength; j < data.length; j++) {
 			String[] params = data[j].split(" ");
 			Double[] pattern = new Double[params.length];
@@ -391,7 +395,7 @@ public class Tensor {
 		int firstSet;
 		int finalSet;
 
-		//first 4 data sets
+		// first 4 data sets
 		for (int i = 0; i < kFold; i++) {
 			firstSet = (i != kFold - 1) ? ((crossDataLength) - (lenghtSet * (i + 1))) : 0;
 			finalSet = ((crossDataLength) - (lenghtSet * i));
@@ -410,7 +414,7 @@ public class Tensor {
 
 		ArrayList<Double[]> auxList = new ArrayList<>();
 
-		//test dataset
+		// test dataset
 		for (int j = 0; j < test.length; j++) {
 			String[] params = test[j].split(" ");
 			Double[] pattern = new Double[params.length];
@@ -422,27 +426,57 @@ public class Tensor {
 		this.dataSet.addDataList(auxList);
 
 	}
+
 	/*
-	 * Do the same as the execute function but this function 
-	 * use The variable graph to calculate the error of Neural Network.
+	 * Do the same as the execute function but this function use The variable graph
+	 * to calculate the error of Neural Network.
 	 */
-	private void test() {
+	private void test(String file) {
 		System.out.println("Testing");
-		for (int p = 0; p < this.dataSet.getDataSet(kFold).size() - 1; p++) {
 
-			Double[] pattern = this.dataSet.getPattern(kFold, p);
-			double estimatedResultScaled = pattern[pattern.length - 1];
-			for (int j = 0; j < results.getArrayList().get(0).length; j++) {
-				results.getArrayList().get(0)[j] = pattern[j];
+		FileWriter fichero = null;
+        PrintWriter pw = null;
+        
+        try
+        {
+        	fichero = new FileWriter("src/Results/"+file);
+            pw = new PrintWriter(fichero);
+            
+			for (int p = 0; p < this.dataSet.getDataSet(kFold).size() - 1; p++) {
+	
+				//prepare data to do the feedForward
+				Double[] pattern = this.dataSet.getPattern(kFold, p);
+				double estimatedResultScaled = pattern[pattern.length - 1];
+				for (int j = 0; j < this.results.getArrayList().get(0).length; j++) {
+					this.results.getArrayList().get(0)[j] = pattern[j];
+				}
+	
+				double finalOutput = this.feedForward(); //predict
+	
+				String line=""; //save the predict in document
+				for (int i=0; i<pattern.length; i++)
+					line+=String.valueOf(pattern[i])+" ";
+				
+				pw.println(line+finalOutput);
+				
+				this.graph.addWithGraph(this.unscaleParams(1, 0, maxs[maxs.length - 1], 0, finalOutput),
+						this.unscaleParams(1, 0, maxs[maxs.length - 1], 0, estimatedResultScaled));
 			}
-
-			double finalOutput = this.feedForward();
-
-			this.graph.addWithGraph(this.unscaleParams(1, 0, maxs[maxs.length - 1], 0, finalOutput),
-					this.unscaleParams(1, 0, maxs[maxs.length - 1], 0, estimatedResultScaled));
-		}
-
-		this.graph.visualizeWithGraph();
+	
+			pw.println("Error: "+this.graph.visualizeWithGraph()+"%");//show the scatter plot and save the error
+			
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+           try {
+           // Nuevamente aprovechamos el finally para 
+           // asegurarnos que se cierra el fichero.
+           if (null != fichero)
+              fichero.close();
+           } catch (Exception e2) {
+              e2.printStackTrace();
+           }
+        }
 	}
 
 	@Override

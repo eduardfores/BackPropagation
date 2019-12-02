@@ -10,7 +10,7 @@ import Tensor.Tensor;
 public class MainTurbine {
 
 	private static BufferedReader reader;
-
+	private final static String FILE="turbineResults.txt";
 	public static String readTestData() throws IOException {
 
 		try {
@@ -36,13 +36,13 @@ public class MainTurbine {
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		Tensor tensor = new Tensor();
-		int listNodes[] = { 4, 10, 5, 1 };
+		int listNodes[] = { 4, 20, 1 };
 		String data;
 
 		tensor.initializeTensor(listNodes);
 		try {
 			data = MainTurbine.readTestData();
-			tensor.train(data, 10000, 50);
+			tensor.train(data, 10000, 50, FILE);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

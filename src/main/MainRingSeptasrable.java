@@ -10,12 +10,11 @@ import Tensor.Tensor;
 public class MainRingSeptasrable {
 
 	private static BufferedReader reader;
-	
+	private final static String FILE="separableResults.txt";
 	public static String readTestData(String file) throws IOException {
 		
 		try {
 			reader = new BufferedReader(new FileReader(file));
-			//reader = new BufferedReader(new FileReader("src/DataRings/ring-separable.csv"));
 			String line;
 			StringBuilder content = new StringBuilder();
 			
@@ -38,16 +37,14 @@ public class MainRingSeptasrable {
 		// TODO Auto-generated method stub
 		Tensor tensor = new Tensor();
 		int listNodes[] = {2,15,10,1}; //separable
-		//int listNodes[] = {2,20,10,5,1}; //merged
 		String data;
 		String test;
 		
 		tensor.initializeTensor(listNodes);
 		try {
 			data=MainRingSeptasrable.readTestData("src/DataRing/ring-separable.csv");
-			//data=MainRingSeptasrable.readTestData("src/DataRing/ring-merged.csv");
 			test=MainRingSeptasrable.readTestData("src/DataRing/ring-test.csv");
-			tensor.train(data,1000,test);
+			tensor.train(data,10000,test,FILE);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

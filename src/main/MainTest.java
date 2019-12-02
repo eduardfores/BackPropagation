@@ -10,7 +10,7 @@ import Tensor.Tensor;
 public class MainTest {
 
 	private static BufferedReader reader;
-
+	private final static String FILE="testResults.txt";
 	public static String readTestData() throws IOException {
 		
 		try {
@@ -42,7 +42,7 @@ public class MainTest {
 		tensor.initializeTensor(listNodes);
 		try {
 			data=MainTest.readTestData();
-			tensor.train(data,500,5);
+			tensor.train(data,500,5, FILE);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
