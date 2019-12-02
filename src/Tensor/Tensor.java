@@ -107,10 +107,14 @@ public class Tensor {
 	 * And use the test function to calculate the test error
 	 */
 	public void train(String str, int epochs, int testPatterns) {
+		int percent=0;
 		String[] data = str.split(System.lineSeparator());
 		this.calculateMaxsOfDataSet(data);
 		this.processDataSet(data, testPatterns);
 
+		System.out.println("trainning");
+		
+		System.out.println(percent+"%");
 		for (int c = 0; c < kFold; c++) {
 			for (int e = 0; e < epochs; e++) {
 				for (int p = 0; p < this.dataSet.getDataSet(c).size() - 1; p++) {
@@ -126,12 +130,49 @@ public class Tensor {
 						this.backPropagation(estimatedResultScaled);
 				}
 			}
+			percent+=25;
+			System.out.println(percent+"%");
 		}
 		
 		this.test();
 
 	}
 
+	/*
+	 * This function train the neuralnetwork but use one external data to test it
+	 */
+	public void train(String str, int epochs, String file) {
+		int percent=0;
+		String[] data1 = str.split(System.lineSeparator());
+		String[] data2 = str.split(System.lineSeparator());
+		this.calculateMaxsOfDataSet(data1);
+		this.processDataSet(data1, data2);
+
+		System.out.println("trainning");
+		System.out.println(percent+"%");
+		for (int c = 0; c < kFold; c++) {
+			for (int e = 0; e < epochs; e++) {
+				for (int p = 0; p < this.dataSet.getDataSet(c).size() - 1; p++) {
+
+					Double[] pattern = this.dataSet.getPattern(c, p);
+					double estimatedResultScaled = pattern[pattern.length - 1];
+					for (int j = 0; j < results.getArrayList().get(0).length; j++) {
+						results.getArrayList().get(0)[j] = pattern[j];
+					}
+
+					double finalOutput = this.feedForward();
+					if (finalOutput != estimatedResultScaled)
+						this.backPropagation(estimatedResultScaled);
+				}
+			}
+			percent+=25;
+			System.out.println(percent+"%");
+		}
+		
+		this.test();
+
+	}
+	
 	private double feedForward() {
 		Double actualRelation = 0.0;
 		Double neuronResult = 0.0;
@@ -305,11 +346,13 @@ public class Tensor {
 	 * parameters with the max searched previously
 	 */
 	private void processDataSet(String data[], int testPatterns) {
+		System.out.println("Processing data");
 		int crossDataLength = (data.length - testPatterns);
 		int lenghtSet = crossDataLength / kFold;
 		int firstSet;
 		int finalSet;
 
+		//first 4 data sets
 		for (int i = 0; i < kFold; i++) {
 			firstSet = (i != kFold - 1) ? ((crossDataLength) - (lenghtSet * (i + 1))) : 0;
 			finalSet = ((crossDataLength) - (lenghtSet * i));
@@ -328,6 +371,7 @@ public class Tensor {
 
 		ArrayList<Double[]> auxList = new ArrayList<>();
 
+		//test data
 		for (int j = crossDataLength; j < data.length; j++) {
 			String[] params = data[j].split(" ");
 			Double[] pattern = new Double[params.length];
@@ -340,11 +384,50 @@ public class Tensor {
 
 	}
 
+	private void processDataSet(String data[], String test[]) {
+		System.out.println("Processing data");
+		int crossDataLength = data.length;
+		int lenghtSet = crossDataLength / kFold;
+		int firstSet;
+		int finalSet;
+
+		//first 4 data sets
+		for (int i = 0; i < kFold; i++) {
+			firstSet = (i != kFold - 1) ? ((crossDataLength) - (lenghtSet * (i + 1))) : 0;
+			finalSet = ((crossDataLength) - (lenghtSet * i));
+			ArrayList<Double[]> auxList = new ArrayList<>();
+
+			for (int j = firstSet; j < finalSet; j++) {
+				String[] params = data[j].split(" ");
+				Double[] pattern = new Double[params.length];
+				for (int k = 0; k < params.length; k++) {
+					pattern[k] = scaleParams(sMAX, sMIN, this.maxs[k], xMIN, Double.valueOf(params[k]));
+				}
+				auxList.add(pattern);
+			}
+			this.dataSet.addDataList(auxList);
+		}
+
+		ArrayList<Double[]> auxList = new ArrayList<>();
+
+		//test dataset
+		for (int j = 0; j < test.length; j++) {
+			String[] params = test[j].split(" ");
+			Double[] pattern = new Double[params.length];
+			for (int k = 0; k < params.length; k++) {
+				pattern[k] = scaleParams(sMAX, sMIN, this.maxs[k], xMIN, Double.valueOf(params[k]));
+			}
+			auxList.add(pattern);
+		}
+		this.dataSet.addDataList(auxList);
+
+	}
 	/*
 	 * Do the same as the execute function but this function 
 	 * use The variable graph to calculate the error of Neural Network.
 	 */
 	private void test() {
+		System.out.println("Testing");
 		for (int p = 0; p < this.dataSet.getDataSet(kFold).size() - 1; p++) {
 
 			Double[] pattern = this.dataSet.getPattern(kFold, p);

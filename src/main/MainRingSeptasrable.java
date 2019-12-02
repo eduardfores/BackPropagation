@@ -11,18 +11,17 @@ public class MainRingSeptasrable {
 
 	private static BufferedReader reader;
 	
-	public static String readTestData() throws IOException {
+	public static String readTestData(String file) throws IOException {
 		
 		try {
-			reader = new BufferedReader(new FileReader("src/DataRings/ring-merged.csv"));
+			reader = new BufferedReader(new FileReader(file));
 			//reader = new BufferedReader(new FileReader("src/DataRings/ring-separable.csv"));
 			String line;
 			StringBuilder content = new StringBuilder();
 			
 			while ((line = reader.readLine()) != null) {
-		        content.append(line.replace(";", " "));
+		        content.append(line.replace(",", " "));
 		        content.append(System.lineSeparator());
-		        System.out.println(line);
 		    }
 			
 			return content.toString();
@@ -38,13 +37,17 @@ public class MainRingSeptasrable {
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		Tensor tensor = new Tensor();
-		int listNodes[] = {2,10,1};
+		int listNodes[] = {2,15,10,1}; //separable
+		//int listNodes[] = {2,20,10,5,1}; //merged
 		String data;
+		String test;
 		
 		tensor.initializeTensor(listNodes);
 		try {
-			data=MainTest.readTestData();
-			tensor.train(data,10000,50);
+			data=MainRingSeptasrable.readTestData("src/DataRing/ring-separable.csv");
+			//data=MainRingSeptasrable.readTestData("src/DataRing/ring-merged.csv");
+			test=MainRingSeptasrable.readTestData("src/DataRing/ring-test.csv");
+			tensor.train(data,1000,test);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

@@ -36,7 +36,7 @@ public class MainTurbine {
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		Tensor tensor = new Tensor();
-		int listNodes[] = { 4, 20, 1 };
+		int listNodes[] = { 4, 10, 5, 1 };
 		String data;
 
 		tensor.initializeTensor(listNodes);
