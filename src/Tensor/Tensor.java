@@ -9,8 +9,8 @@ import Graphics.ScatterPlot;
 
 public class Tensor {
 
-	private static final double learningRate = 0.1;
-	private static final double momentum = 1;
+	private static final double learningRate = 0.01;
+	private static final double momentum = 0.9;
 	private static final double sMAX = 0.9;
 	private static final double sMIN = 0.1;
 	private static final double xMIN = 0;

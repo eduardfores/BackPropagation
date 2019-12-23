@@ -36,12 +36,12 @@ public class MainTurbineCV {
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		Tensor tensor = new Tensor();
-		int listNodes[] = { 4, 20, 1 };
+		int listNodes[] = { 4, 18, 9, 1 };
 		String data;
 
 		try {
 			data = MainTurbine.readTestData();
-			tensor.crossValidation(data, 10000, 50, FILE, listNodes);
+			tensor.crossValidation(data, 15000, 50, FILE, listNodes);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
