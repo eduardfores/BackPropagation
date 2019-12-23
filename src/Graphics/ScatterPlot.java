@@ -108,6 +108,7 @@ public class ScatterPlot extends JFrame {
 	}
 
 	public double getError() {
+		calculateError();
 		return error;
 	}
 }

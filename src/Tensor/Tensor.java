@@ -9,8 +9,8 @@ import Graphics.ScatterPlot;
 
 public class Tensor {
 
-	private static final double learningRate = 0.05;
-	private static final double momentum = 0.9;
+	private static final double learningRate = 0.1;
+	private static final double momentum = 1;
 	private static final double sMAX = 0.9;
 	private static final double sMIN = 0.1;
 	private static final double xMIN = 0;
@@ -24,17 +24,15 @@ public class Tensor {
 	private ListOfList deltasList;
 	private HashMap<Integer, Relation> changesWeigth;
 	private ListOfList changesThreeHold;
-
+    private ArrayList<Double> CVError;
+    
 	private ScatterPlot graph;
 
 	public Tensor() {
 		this.tensor = new HashMap<Integer, Relation>();
-		this.results = new ListOfList();
-		this.threeHold = new ListOfList();
-		this.deltasList = new ListOfList();
 		this.changesWeigth = new HashMap<Integer, Relation>();
-		this.changesThreeHold = new ListOfList();
 		this.dataSet = new CrossValidationList();
+		this.CVError = new ArrayList<>();
 		this.graph = new ScatterPlot("Plot Error");
 	}
 
@@ -45,15 +43,19 @@ public class Tensor {
 	public void initializeTensor(int listNodes[]) {
 		int lenList = listNodes.length;
 
+		this.results = new ListOfList();
 		this.results.initializeListOfLists(listNodes, 0); // This lists will have got all results of each neurons
 		// System.out.println(this.results);
 
+		this.threeHold = new ListOfList();
 		this.threeHold.initializeListOfLists(listNodes, 0); // this list will have got threesHold or vias
 		// System.out.println(this.threeHold);
 
+		this.deltasList = new ListOfList();
 		this.deltasList.initializeListOfLists(listNodes, 0);
 		// System.out.println(this.deltasList);
 
+		this.changesThreeHold = new ListOfList();
 		this.changesThreeHold.initializeListOfLists(listNodes, 0);
 
 		for (int i = 1; i < lenList; i++) {
@@ -62,6 +64,56 @@ public class Tensor {
 		}
 	}
 
+	public void crossValidation(String str, int epochs, int testPatterns, String fileName, int listNodes[]) {
+		int percent = 0;
+		String[] data = str.split(System.lineSeparator());
+		int validatorSet=0;
+		Double errorCV=0.0;
+		
+		this.initializeTensor(listNodes);
+		this.calculateMaxsOfDataSet(data);
+		this.processDataSet(data, testPatterns);
+
+		System.out.println("trainning");
+
+		System.out.println(percent + "% of CV loop "+(validatorSet+1)+"/"+kFold);
+		for (int cv = 0; cv < kFold; cv++) { // repeat 4 times the process of CV
+			for (int c = 0; c < kFold; c++) { // traverse the each list
+				if(c!=validatorSet) // jump the train for the validator list
+					for (int e = 0; e < epochs; e++) { // repeat the process X epochs
+						for (int p = 0; p < this.dataSet.getDataSet(c).size() - 1; p++) { // forEach pattern do FF and BP 
+		
+							Double[] pattern = this.dataSet.getPattern(c, p);
+							double estimatedResultScaled = pattern[pattern.length - 1];
+							for (int j = 0; j < results.getArrayList().get(0).length; j++) {
+								results.getArrayList().get(0)[j] = pattern[j];
+							}
+		
+							double finalOutput = this.feedForward();
+							if (finalOutput != estimatedResultScaled)
+								this.backPropagation(estimatedResultScaled);
+						}
+					}
+				percent += 25;
+				System.out.println(percent + "% of CV loop "+(validatorSet+1)+"/"+kFold);	
+			}
+			
+			this.testCrossValidation(validatorSet);
+			
+			//reset all parameter for the next test
+			this.initializeTensor(listNodes);
+			percent=0;
+			this.graph=new ScatterPlot("Plot Error");
+			validatorSet++;
+			
+			System.out.println(percent + "% of CV loop "+(validatorSet+1)+"/"+kFold);
+		}
+		for(Double e: CVError)
+			errorCV+=e;
+		
+		System.out.println("The error is "+ errorCV/4);
+	}
+	
 	/*
 	 * This function use only the feed forward to use the Neural Network to predict
 	 * some result.
@@ -479,6 +531,31 @@ public class Tensor {
         }
 	}
 
+	/*
+	 * Do the same as the execute function but this function use The variable graph
+	 * to calculate the error of Neural Network.
+	 */
+	private void testCrossValidation(int Sx) {
+		System.out.println("Testing "+(Sx+1)+"/"+kFold);
+
+			for (int p = 0; p < this.dataSet.getDataSet(Sx).size() - 1; p++) {
+	
+				//prepare data to do the feedForward
+				Double[] pattern = this.dataSet.getPattern(Sx, p);
+				double estimatedResultScaled = pattern[pattern.length - 1];
+				
+				for (int j = 0; j < this.results.getArrayList().get(0).length; j++) {
+					this.results.getArrayList().get(0)[j] = pattern[j];
+				}
+	
+				double finalOutput = this.feedForward(); //predict
+				
+				this.graph.add(finalOutput,estimatedResultScaled);
+			}			
+    
+			CVError.add(this.graph.getError());
+	}
+	
 	@Override
 	public String toString() {
 		String aux = "";
